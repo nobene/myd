@@ -1,0 +1,10 @@
+# ignore binary
+myd
+
+# ignore text files
+*.txt
+
+# ignore test files
+test*
+
+
