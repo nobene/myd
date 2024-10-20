@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var version = "1"
+var version = "2"
 
 const tabstop = 8
 
@@ -527,7 +527,9 @@ func (e *Editor) drawRows(b *strings.Builder) {
 					if r < 26 {
 						sym = '@' + r
 						if r == 6 {
-							b.WriteString("\r\n")
+//							b.WriteString("\r\n")
+							sym = ' '
+							b.WriteRune(sym)
 						}
 					}
 					if r != 6 {
@@ -602,6 +604,8 @@ func utf8Slice(s string, start, end int) string {
 
 func (e *Editor) drawMessageBar(b *strings.Builder) {
 	b.Write([]byte("\x1b[K"))
+	b.Write([]byte("\x1b[90m"))      // switch to gray color
+	defer b.Write([]byte("\x1b[m")) // switch back to normal formatting
 	msg := e.statusmsg
 	if runewidth.StringWidth(msg) > e.screenCols {
 		msg = runewidth.Truncate(msg, e.screenCols, "...")
