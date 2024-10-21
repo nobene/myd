@@ -31,6 +31,10 @@
     Ctrl-C: mark end of the selection and then copy selected piece to clipboard
     Ctrl-V: paste from clipboard to the start of the next string from current position
     Ctrl-Z: clear clipboard's content, including external clipboard of OS
+    Ctrl-X: select with Ctrl-A the start position and then with Ctrl-X
+            the stop position on the same string,
+            new string without selected piece will be inserted as the next string below
+    Ctrl-D: delete current string
 
     Note: copying works only on 1 or 2 consecutive strings inside editor.
           It is possible to mark part of 1 string right to left or left to right.

@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var version = "2"
+var version = "3"
 
 const tabstop = 8
 
@@ -255,11 +255,7 @@ func (e *Editor) readKey() (key, error) {
 		}
 		if n > 0 {
 			buf = bytes.TrimRightFunc(buf, func(r rune) bool { return r == 0 })
-//			e.SetStatusMessage(string(key(buf[0])))
 			switch {
-//			case bytes.Equal(buf, []byte("\x1b[L")):
-//				e.SetStatusMessage("F8 pressed")
-//				return keyEscape, nil
 			case bytes.Equal(buf, []byte("\x1b[A")):
 				return keyArrowUp, nil
 			case bytes.Equal(buf, []byte("\x1b[B")):
@@ -377,6 +373,10 @@ func (e *Editor) ProcessKey() error {
 		}
 		e.SetStatusMessage("Copied to clipboard: " + e.clip)
 		e.clip = ""
+		e.stopx = 0
+		e.stopy = 0
+		e.startx = 0
+		e.starty = 0
 	case key(ctrl('v')):
 		e.clip, err = glippy.Get()
 		if err != nil {
@@ -387,11 +387,49 @@ func (e *Editor) ProcessKey() error {
 		row := e.rows[e.cy]
 		e.InsertRow(e.cy + 1, e.clip)
 		row = e.rows[e.cy]
-//		row.chars = row.chars[:e.cx]
 		e.updateRow(row)
 		e.SetStatusMessage("Pasted from clipboard to string: " + strconv.Itoa(e.cy + 2))
 //		e.clip = ""
 //		glippy.Set("")
+	case key(ctrl('x')):
+		e.stopx = e.cx
+		e.stopy = e.cy
+		if e.stopy - e.starty == 0 {
+			if e.stopx < e.startx {
+				tempx := e.stopx
+				e.stopx = e.startx
+				e.startx = tempx
+			}
+			rowlen := len(e.rows[e.starty].render)
+			cutstopx := e.stopx + 1
+			if cutstopx >= rowlen {
+				cutstopx = rowlen
+			}
+			cutted := e.rows[e.starty].render[:e.startx] + e.rows[e.starty].render[cutstopx:]
+//			row1 := e.rows[e.starty]
+			e.InsertRow(e.starty + 1, cutted)
+			row2 := e.rows[e.starty + 1]
+			e.updateRow(row2)
+//			e.updateRow(row1)
+			n, err := e.Save()
+			if err != nil {
+			if err == ErrPromptCanceled {
+				e.SetStatusMessage("Save aborted")
+			} else {
+				e.SetStatusMessage("Can't save! I/O error: %s", err.Error())
+			}
+			} else {
+				e.SetStatusMessage("%d bytes saved to disk", n)
+			}
+			e.updateRow(row2)
+//			e.DeleteRow(e.starty)
+			e.SetStatusMessage("cut out: " + cutted)
+			cutted = ""
+			e.stopx = 0
+			e.stopy = 0
+			e.startx = 0
+			e.starty = 0
+		}
 	case key(ctrl('z')):
 		glippy.Set("")
 		e.SetStatusMessage("Cleared clipboard's content")
@@ -1220,7 +1258,7 @@ func main() {
 		}
 	}
 
-	editor.SetStatusMessage("     Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find | Ctrl-A = select | Ctrl-C = copy | Ctrl-V = paste")
+	editor.SetStatusMessage("    Ctrl-S = save | Ctrl-Q = quit | Ctrl-D = delete | Ctrl-A = select | Ctrl-C = copy | Ctrl-V = paste")
 
 	for {
 		editor.Render()
