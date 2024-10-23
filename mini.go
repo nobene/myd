@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var version = "1"
+var version = "1.1"
 
 const tabstop = 8
 
@@ -351,12 +351,12 @@ func (e *Editor) ProcessKey() error {
 		} else {
 			e.SetStatusMessage("%d bytes saved to disk", n)
 		}
-		row3 := e.rows[e.cy - 1]
-		e.updateRow(row3)
-		row4 := e.rows[e.cy]
-		e.updateRow(row4)
-		row5 := e.rows[e.cy + 1]
-		e.updateRow(row5)
+//		row3 := e.rows[e.cy - 1]
+//		e.updateRow(row3)
+//		row4 := e.rows[e.cy]
+//		e.updateRow(row4)
+//		row5 := e.rows[e.cy + 1]
+//		e.updateRow(row5)
 		e.DeleteRow(e.cy)
 		e.SetStatusMessage("Deleted string: " + strconv.Itoa(e.cy + 1))
 	case key(ctrl('a')):
@@ -364,6 +364,10 @@ func (e *Editor) ProcessKey() error {
 		e.startx = e.cx
 		e.starty = e.cy
 	case key(ctrl('c')):
+		if e.filename == "" {
+			e.SetStatusMessage("Can not select text: save file with ^S first")
+			break
+		}
 		e.stopx = e.cx
 		e.stopy = e.cy
 		if e.stopy - e.starty > 1 {
@@ -380,6 +384,13 @@ func (e *Editor) ProcessKey() error {
 				e.stopx = e.startx
 				e.startx = tempx
 			}
+			if e.stopx == e.startx {
+				break
+			}
+			if e.starty == 0 {
+				e.SetStatusMessage("string 1 : to short")
+				return nil
+			}
 			if e.stopx >= len(e.rows[e.starty].render) {
 				e.clip = e.rows[e.starty].render[e.startx:e.stopx]
 				glippy.Set(e.clip)
@@ -388,6 +399,10 @@ func (e *Editor) ProcessKey() error {
 			}
 			e.clip = e.rows[e.starty].render[e.startx:e.stopx + 1]
 			glippy.Set(e.clip)
+		}
+		if e.stopx == e.startx {
+			e.SetStatusMessage("select more than 1 symbol")
+			break
 		}
 		if e.stopy - e.starty == 1 {
 			if e.stopx >= len(e.rows[e.stopy].render) {
@@ -683,6 +698,9 @@ func (e *Editor) drawMessageBar(b *strings.Builder) {
 
 func rowCxToRx(row *Row, cx int) int {
 	rx := 0
+	if len(row.chars) < cx {
+		return 0
+	}
 	for _, r := range row.chars[:cx] {
 		if r == '\t' {
 			rx += (tabstop) - (rx % tabstop)
