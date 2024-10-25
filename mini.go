@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var version = "1.1"
+var version = "1.2"
 
 const tabstop = 8
 
@@ -365,17 +365,17 @@ func (e *Editor) ProcessKey() error {
 		e.starty = e.cy
 	case key(ctrl('c')):
 		if e.filename == "" {
-			e.SetStatusMessage("Can not select text: save file with ^S first")
+			e.SetStatusMessage("Can not select text: save file via ^S first")
 			break
 		}
 		e.stopx = e.cx
 		e.stopy = e.cy
 		if e.stopy - e.starty > 1 {
-			e.SetStatusMessage("^C copying aborted: can not copy from > 2 strings")
+			e.SetStatusMessage("^C aborted: can not copy from > 2 strings in a row ")
 			break
 		}
 		if e.stopy - e.starty < 0 {
-			e.SetStatusMessage("^C copying aborted: content was selected from bottom to top")
+			e.SetStatusMessage("^C aborted: content was selected from bottom to top")
 			break
 		}
 		if e.stopy - e.starty == 0 {
@@ -394,27 +394,27 @@ func (e *Editor) ProcessKey() error {
 			if e.stopx >= len(e.rows[e.starty].render) {
 				e.clip = e.rows[e.starty].render[e.startx:e.stopx]
 				glippy.Set(e.clip)
-				e.SetStatusMessage("Copied to clipboard: " + e.clip)
+				e.SetStatusMessage("Copied to clipboard: \"" + e.clip + "\"")
 				break
 			}
 			e.clip = e.rows[e.starty].render[e.startx:e.stopx + 1]
 			glippy.Set(e.clip)
 		}
 		if e.stopx == e.startx {
-			e.SetStatusMessage("select more than 1 symbol")
+			e.SetStatusMessage("Can not select just 1 symbol")
 			break
 		}
 		if e.stopy - e.starty == 1 {
 			if e.stopx >= len(e.rows[e.stopy].render) {
 				e.clip = e.rows[e.starty].render[e.startx:] + "\x06 " + e.rows[e.stopy].render[:e.stopx]
 				glippy.Set(e.clip)
-				e.SetStatusMessage("Copied to clipboard: " + e.clip)
+				e.SetStatusMessage("Copied to clipboard: \"" + e.clip + "\"")
 				break
 			}
 			e.clip = e.rows[e.starty].render[e.startx:] + "\x06 " + e.rows[e.stopy].render[:e.stopx + 1]
 			glippy.Set(e.clip)
 		}
-		e.SetStatusMessage("Copied to clipboard: " + e.clip)
+		e.SetStatusMessage("Copied to clipboard: \"" + e.clip + "\"")
 		e.clip = ""
 		e.stopx = 0
 		e.stopy = 0
@@ -428,7 +428,17 @@ func (e *Editor) ProcessKey() error {
 			panic(err)
 		}
 		row := e.rows[e.cy]
-		e.InsertRow(e.cy + 1, e.clip)
+		begin := e.rows[e.cy].render[:e.cx]
+		if e.cx >= len(e.rows[e.cy].render) {
+			end := e.rows[e.cy].render[e.cx:e.cx]
+			e.InsertRow(e.cy + 1, begin + e.clip + end )
+			row = e.rows[e.cy]
+			e.updateRow(row)
+			e.SetStatusMessage("Pasted from clipboard to string: " + strconv.Itoa(e.cy + 2))
+			break
+		}
+		end1 := e.rows[e.cy].render[e.cx:]
+		e.InsertRow(e.cy + 1, begin + e.clip + end1)
 		row = e.rows[e.cy]
 		e.updateRow(row)
 		e.SetStatusMessage("Pasted from clipboard to string: " + strconv.Itoa(e.cy + 2))
@@ -460,7 +470,7 @@ func (e *Editor) ProcessKey() error {
 			} else {
 				e.SetStatusMessage("%d bytes saved to disk", n)
 			}
-			e.SetStatusMessage("cut out: " + cutted)
+			e.SetStatusMessage("^X cut produced : \"" + cutted + "\"")
 			cutted = ""
 			e.stopx = 0
 			e.stopy = 0
@@ -474,7 +484,7 @@ func (e *Editor) ProcessKey() error {
 		e.stopy = 0
 		e.startx = 0
 		e.starty = 0
-		e.SetStatusMessage("Cleared clipboard's content")
+		e.SetStatusMessage("Clipboard was cleared")
 	case key(ctrl('q')):
 		// warn the user about unsaved changes.
 		if e.dirty > 0 && e.quitCounter < quitTimes {

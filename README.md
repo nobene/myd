@@ -29,7 +29,7 @@
     Ctrl-F: find pattern
     Ctrl-A: mark start of the selection
     Ctrl-C: mark end of the selection and then copy selected piece to clipboard
-    Ctrl-V: paste from clipboard to the start of the next string below
+    Ctrl-V: paste from clipboard at the current position to the next string below
     Ctrl-Z: clear clipboard's content, including external clipboard of OS
     Ctrl-X: select with Ctrl-A the start position and then with Ctrl-X
             the stop position on the same string, new string without selected piece
