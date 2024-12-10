@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var version = "1.2"
+var version = "1.3"
 
 const tabstop = 8
 
@@ -428,17 +428,64 @@ func (e *Editor) ProcessKey() error {
 			panic(err)
 		}
 		row := e.rows[e.cy]
+		tabs := 0
+		rowstring := fmt.Sprintf("%s", row.chars)
+		rowstring = strings.Replace(rowstring, "(int32=9)", "TAB", -1)
+		tabs = strings.Count(rowstring ,"TAB")
+//		e.SetStatusMessage(strconv.Itoa(tabs * 8))
+//		e.SetStatusMessage(fmt.Sprint(row.chars))//strconv.Itoa(ts))
+//		return nil
+		tabs = tabs * 8
 		begin := e.rows[e.cy].render[:e.cx]
 		if e.cx >= len(e.rows[e.cy].render) {
 			end := e.rows[e.cy].render[e.cx:e.cx]
-			e.InsertRow(e.cy + 1, begin + e.clip + end )
+			e.InsertRow(e.cy + 1, begin + e.clip + end)
 			row = e.rows[e.cy]
 			e.updateRow(row)
 			e.SetStatusMessage("Pasted from clipboard to string: " + strconv.Itoa(e.cy + 2))
 			break
 		}
-		end1 := e.rows[e.cy].render[e.cx:]
-		e.InsertRow(e.cy + 1, begin + e.clip + end1)
+		cx2 := e.cx + tabs - 1
+		if cx2 >= len(e.rows[e.cy].render) {
+			cx2--
+			if tabs > 8 {
+				cx2--
+			}
+			if tabs > 16 {
+				cx2--
+			}
+			if tabs > 24 {
+				cx2--
+			}
+			if tabs > 32 {
+				cx2--
+			}
+			if tabs > 40 {
+				cx2--
+			}
+		}
+		begin1 := e.rows[e.cy].render[:cx2]
+		cx3 := e.cx + tabs - 1
+		if cx3 >= len(e.rows[e.cy].render) {
+			cx3--
+			if tabs > 8 {
+				cx3--
+			}
+			if tabs > 16 {
+				cx3--
+			}
+			if tabs > 24 {
+				cx3--
+			}
+			if tabs > 32 {
+				cx3--
+			}
+			if tabs > 40 {
+				cx3--
+			}
+		}
+		end1 := e.rows[e.cy].render[cx3:]
+		e.InsertRow(e.cy + 1, begin1 + e.clip + end1)
 		row = e.rows[e.cy]
 		e.updateRow(row)
 		e.SetStatusMessage("Pasted from clipboard to string: " + strconv.Itoa(e.cy + 2))
