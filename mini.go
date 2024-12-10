@@ -443,6 +443,8 @@ func (e *Editor) ProcessKey() error {
 			row = e.rows[e.cy]
 			e.updateRow(row)
 			e.SetStatusMessage("Pasted from clipboard to string: " + strconv.Itoa(e.cy + 2))
+			tabs = 0
+			rowstring = ""
 			break
 		}
 		cx2 := e.cx + tabs - 1
@@ -489,6 +491,8 @@ func (e *Editor) ProcessKey() error {
 		row = e.rows[e.cy]
 		e.updateRow(row)
 		e.SetStatusMessage("Pasted from clipboard to string: " + strconv.Itoa(e.cy + 2))
+		tabs = 0
+		rowstring = ""
 	case key(ctrl('x')):
 		e.stopx = e.cx
 		e.stopy = e.cy
