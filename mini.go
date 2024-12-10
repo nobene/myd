@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var version = "1.3"
+var version = "1.4"
 
 const tabstop = 8
 
@@ -351,12 +351,6 @@ func (e *Editor) ProcessKey() error {
 		} else {
 			e.SetStatusMessage("%d bytes saved to disk", n)
 		}
-//		row3 := e.rows[e.cy - 1]
-//		e.updateRow(row3)
-//		row4 := e.rows[e.cy]
-//		e.updateRow(row4)
-//		row5 := e.rows[e.cy + 1]
-//		e.updateRow(row5)
 		e.DeleteRow(e.cy)
 		e.SetStatusMessage("Deleted string: " + strconv.Itoa(e.cy + 1))
 	case key(ctrl('a')):
@@ -465,6 +459,21 @@ func (e *Editor) ProcessKey() error {
 			if tabs > 40 {
 				cx2--
 			}
+			if tabs > 48 {
+				cx2--
+			}
+			if tabs > 56 {
+				cx2--
+			}
+			if tabs > 64 {
+				cx2--
+			}
+			if tabs > 72 {
+				cx2--
+			}
+			if tabs > 80 {
+				cx2--
+			}
 		}
 		begin1 := e.rows[e.cy].render[:cx2]
 		cx3 := e.cx + tabs - 1
@@ -483,6 +492,21 @@ func (e *Editor) ProcessKey() error {
 				cx3--
 			}
 			if tabs > 40 {
+				cx3--
+			}
+			if tabs > 48 {
+				cx3--
+			}
+			if tabs > 56 {
+				cx3--
+			}
+			if tabs > 64 {
+				cx3--
+			}
+			if tabs > 72 {
+				cx3--
+			}
+			if tabs > 80 {
 				cx3--
 			}
 		}
