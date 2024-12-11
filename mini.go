@@ -19,7 +19,7 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-var version = "1.4"
+var version = "1.5"
 
 const tabstop = 8
 
@@ -441,7 +441,7 @@ func (e *Editor) ProcessKey() error {
 			rowstring = ""
 			break
 		}
-		cx2 := e.cx + tabs - 1
+		cx2 := e.cx + tabs
 		if cx2 >= len(e.rows[e.cy].render) {
 			cx2--
 			if tabs > 8 {
@@ -480,7 +480,7 @@ func (e *Editor) ProcessKey() error {
 		if cx3 >= len(e.rows[e.cy].render) {
 			cx3--
 			if tabs > 8 {
-				cx3--
+//				cx3--
 			}
 			if tabs > 16 {
 				cx3--
@@ -510,7 +510,10 @@ func (e *Editor) ProcessKey() error {
 				cx3--
 			}
 		}
-		end1 := e.rows[e.cy].render[cx3:]
+		end1 := e.rows[e.cy].render[cx3:len(row.render)]
+		if tabs == 0 {
+			end1 = e.rows[e.cy].render[cx3:len(row.render) - 1]
+		}
 		e.InsertRow(e.cy + 1, begin1 + e.clip + end1)
 		row = e.rows[e.cy]
 		e.updateRow(row)
